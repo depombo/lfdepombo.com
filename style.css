@@ -12,3 +12,13 @@ body {
 li {
   margin: 0.6rem 0;
 }
+
+h1 {
+  margin-bottom: 3rem;
+}
+
+.slash-header {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  text-align: center;
+}
