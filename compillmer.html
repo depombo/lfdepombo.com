@@ -1,31 +1,74 @@
-<html><head>
-  <title>compillmer</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔘</text></svg>">
-  <link rel="stylesheet" href="style.css">
-  <script type="text/javascript" src="posthog.js"></script>
-</head>
+<html>
+  <head>
+    <title>compillmer</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔘</text></svg>">
+    <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="posthog.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-coy.min.css">
+  </head>
   <body>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-armasm.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-fortran.min.js"></script>
     <p><a href="./">..</a></p>
     <p style="text-align:right">2023-07-29</p>
     <h1>llms as proper compilers</h1>
-    <p class="slash-header">
-      /// a brief history of our programming abstractions ///
+    <p class="nostyle-header">
+      a brief history of our programming abstractions
+    <br>
+      ------------------------------------------------
+    <p>
+      It is hard to fathom, but in a not-so-distant past <a href="https://en.wikipedia.org/wiki/Assembly_language">assembly languages</a> were considered a high-level programming language when compared to its predecessor, <a href="https://en.wikipedia.org/wiki/Machine_code">machine code</a>. In 1947, assembly languages introduced an abstraction layer to simplify programming computers by letting developers use numbers, symbols, and abbreviations instead of just 0s and 1s as had been the case in machine code. Assembly languages gave birth to computer science as a field in the digital realm if we exclude analog technologies from the 1800s and early 1900s like <a href="https://en.wikipedia.org/wiki/Mechanical_calculator">mechanical calculators</a>, <a href="https://en.wikipedia.org/wiki/Abacus">abaci</a>, <a href="https://en.wikipedia.org/wiki/Tabulating_machine">tabulators</a>, etc. However, assembly languages were still very low-level and required a lot of effort to write and maintain.
+    </p>
+
+    <a style="text-decoration: none" href="https://jameshfisher.com/2018/03/10/linux-assembly-hello-world/">
+      <pre class="language-armasm">
+        <code>
+; A sample “hello world” program that writes to stdout using `write` then exits using `exit` on Linux x86-64.
+; courtesy of Jim Fisher https://jameshfisher.com/2018/03/10/linux-assembly-hello-world/
+
+global _start
+
+section .text
+
+_start:
+  mov rax, 1        ; write(
+  mov rdi, 1        ;   STDOUT_FILENO,
+  mov rsi, msg      ;   "Hello, world!\n",
+  mov rdx, msglen   ;   sizeof("Hello, world!\n")
+  syscall           ; );
+
+  mov rax, 60       ; exit(
+  mov rdi, 0        ;   EXIT_SUCCESS
+  syscall           ; );
+
+section .rodata
+  msg: db "Hello, world!", 10
+  msglen: equ $ - msg
+        </code>
+      </pre>
+    </a>
+
+    <p>
+      Then came <a href="https://en.wikipedia.org/wiki/Fortran">Fortran I</a> in 1953, which provided an abstraction with new primitives that allowed programmers to more eloquently ask computers to do numerical calculations for them. Fortran gave birth to many more <a href="https://en.wikipedia.org/wiki/General-purpose_programming_language">general purpose programming languages</a>, including C in 1972. However as we started to write more complex software, we realized that memory management became more and more cumbersome. <a href="https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)">John McCarthy</a> came up with Lisp in 1959. Lisp was the second general purpose programming language to exist after Fortran I and provided a higher-level abstraction that automatically managed memory for developers using a new concept called <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)">garbage collection</a>. Automatic memory management wasn't as performant or efficient as a good old <i>malloc</i> and <i>free</i> combo, but it provided programmers with a superior software development experience. In fact, <a href="https://en.wikibooks.org/wiki/Fortran/memory_management">newer versions of Fortran</a> and the majority of the <a href="https://survey.stackoverflow.co/2023/#section-most-popular-technologies-programming-scripting-and-markup-languages">most used programming languages today</a> use some form of the original garbage collector invented by John McCarthy to automatically manage computer memory for developers. The evolution of programming languages has been a constant march towards abstractions that make programming easier and more accessible. Programming abstractions build on top of each other over time and the old ones continue to live underneath the newer ones that we use today. And so the high-level languages of yesterday become the build artifacts and implementation details of today.
+    </p>
+
+    <p class="nostyle-header">
+      how important is determinism for a compiler?
+      <br>
+      --------------------------------------------
+    <p>
+    <p>
+    <p>
+      LLMs are already changing the way we interact with code as witnessed with the <a href="https://survey.stackoverflow.co/2023/#section-most-popular-technologies-ai-developer-tools">advent</a> of <a href="https://github.com/features/copilot">GitHub's Copilot</a>. However, thus far LLMs have only served as programming companions that we can't fully rely on as they are not deterministic and can periodically hallucinate or produce errors. Historically, compilers are deterministic. Given the same input, the same compiler will <i>always</i> give you the same output. This has ruled out LLMs as compilers in the traditional sense. However, how much determinism do we really need to reliably produce software that does what we want it to do? If we think of an LLM as a software enginner, as opposed to a companion, the same software enginner can produce different software given the same spec or set of requirements. All the outputs across different implementation attempts <i>can</i> be valid unless the requirements provided are excesively stringent. If we can get to a point where LLMs can reliably produce correct code that meets the requirements given, then we can start to think of LLMs as compilers even if they are not deterministic. The question is not really if it will happen, but when it will happen. The field of generative AI is unfolding rapidly and working towards both the <i><b>correctness</b></i> and <i><b>determinism</b></i> of the code LLMs produce. As we make progress on both fronts, LLMs will sooner or later add <i>English</i> as another root node of the <a href="https://github.com/stereobooster/programming-languages-genealogical-tree">genealogical tree of programming languages</a> and from it a whole new set of syntaxes will span that will use the high-level programming languages of today, like Javascript and Python, as foundational and low-level implementation details akin to what assembly represent today.
+    </p>
+    <p class="nostyle-header">
+      compillmers
+      <br>
+      -----------
     </p>
     <p>
-      It is hard to fathom, but in a not-so-distant past <a href="https://en.wikipedia.org/wiki/Assembly_language">assembly languages</a> were considered a high-level programming language when compared to its predecessor, <a href="https://en.wikipedia.org/wiki/Machine_code">machine code</a>. In 1947, assembly languages introduced an abstraction layer to simplify programming computers by letting developers use numbers, symbols, and abbreviations instead of just 0s and 1s as had been the case in machine code. Assembly languages gave birth to computer science as a field in the digital realm if we exclude analog technologies from the 1800s and early 1900s like <a href="https://en.wikipedia.org/wiki/Mechanical_calculator">mechanical calculators</a>, <a href="https://en.wikipedia.org/wiki/Abacus">abaci</a>, <a href="https://en.wikipedia.org/wiki/Tabulating_machine">tabulators</a>, etc. However, assembly languages were still very low-level and required a lot of effort to write and maintain. Then came <a href="https://en.wikipedia.org/wiki/Fortran">Fortran I</a> in 1953, which provided an abstraction with primitives that allowed programmers to be more eloquent when talking to computers than with assembly. Fortan gave birth to many more general purpose programming languages, including C in 1972. However as we started to write more complex software we realized that memory management became more and more cumbersome. <a href="https://en.wikipedia.org/wiki/John_McCarthy_(computer_scientist)">John McCarthy</a> came up with the second high-level programming language after Fortan 1 in 1959 called Lisp. Lisp provided a higher-level abstraction that automatically managed memory for developers using <a href="https://en.wikipedia.org/wiki/Garbage_collection_(computer_science)">garbage collection</a>. Automatic memory management wasn't as performant or efficient as a good old <i>malloc</i> and <i>free</i> combo, but it provided programmers with a superior software development experience. The majority of the <a href="https://survey.stackoverflow.co/2023/#section-most-popular-technologies-programming-scripting-and-markup-languages">most used programming languages today</a> use a more sophisticated form of the original garbage collector to automatically manage memory. The evolution of programming languages has been a constant march towards abstractions that make programming easier and more accessible. Programming abstractions build on top of each other over time and the old ones continue to live underneath the newer ones that we use today. And so the high-level languages of yesterday become the build artifacts of today.
-    </p>
-    </p>
-    <p class="slash-header">
-      /// how important is determinism? ///
-    </p>
-    <p>
-      LLMs are already changing the way we interact with code as witnessed with <a href="https://github.com/features/copilot">GitHub's Copilot</a>. However, LLMs have only served as programming companions that we can't fully rely on as they are not deterministic and can periodically hallucinate or produce errors. Historically, compilers are deterministic. Given the same input, the same compiler will <i>always</i> give you the same output. This has ruled out LLMs as compilers in the traditional sense. However, how much determinism do we really need to reliably produce software that does what we want it to do? If we think of an LLM as a software enginner, as opposed to a companion, the same software enginner can produce different software given the same spec or set of requirements. All the outputs across different implementation attempts <i>can</i> be valid unless the requirements provided are excesively stringent. If we can get to a point where LLMs can reliably produce correct code that meets the requirements given, then we can start to think of LLMs as compilers even if they are not fully deterministic. The question is not really if it will happen, but when it will happen. The field of generative AI is unfolding rapidly and working towards both the <i><b>correctness</b></i> and <i><b>determinism</b></i> of the code LLMs produce. As we make progress on both fronts, LLMs will sooner or later add <i>English</i> as another root node of the <a href="https://github.com/stereobooster/programming-languages-genealogical-tree">genealogical tree of programming languages</a> and from it a whole new set of syntaxes will span where the high level programming languages we use today, like Javascript and Python, will become foundational and low-level implementation details akin to assembly or CPU instructions today.
-    </p>
-    <p class="slash-header">
-      /// compillmers ///
-    </p>
-    <p>
-      However, there is already a lot of hay to mow with the current state of affairs in generative AI. LLMs as proper compilers, compiLLMers if you will, can produce correct code reliably enough today given enough guidance. Exposing a bare chat interface to an LLM is not the way to go here as humans are lazy and suck at providing examples and precise instructions. <a href="https://en.wikipedia.org/wiki/Coq">Coq</a> is a great reference of a syntax that is example-driven via assertions. We need to make it easy for people to give LLMs examples with subsets of English that are easy to learn and use. <a href="https://techhub.social/@ISV_Damocles">David Ellis</a>, <a href="https://twitter.com/alrre93">Alejandro Guillen</a> and I introduced <a href="https://github.com/alantech/marsha">Marsha</a> as a proposal for what such a syntax can look like. It is still early, but LLMs will increasingly give us the power to create more accessible representations of computer programs that look closer to English and the LLMs distill into the complexities of the current high-level languages. Knowing Java or Python will become a rare skill, akin to individuals specializing in low-level optimizations using C or Assembly language these days. Instead, the focus will shift to the higher-level abstractions that are built on top of LLMs. Programming in the near future will be about building and composing these abstractions for different tasks.
+      However, there is already a lot of hay to mow with the current state of affairs in generative AI. LLMs as proper compilers, compiLLMers if you will, can produce <i>correct</i> code reliably enough today given enough guidance. Getting an LLM to generate correct code requires providing various examples and descriptive instructions. The UX of a chat interface to an LLM inherently leads people to write prompts that do not meet this criteria. We need to make it easy for people to give LLMs precise descriptions and numerious examples as concisely as possible via syntaxes that are similar to English so they remain easy to learn and use. <a href="https://en.wikipedia.org/wiki/Coq">Coq</a> is a great example of a functional programming syntax that is verbose and distant from English, but example-driven via assertions. <a href="https://techhub.social/@ISV_Damocles">David Ellis</a>, <a href="https://twitter.com/alrre93">Alejandro Guillen</a> and I recently introduced <a href="https://github.com/alantech/marsha">Marsha</a> as a proposal for what a syntax that meets the requirements outlined can look like. It is still early, but LLMs will increasingly give us the power to create more accessible representations of computer programs that look close to English. These representations will be distilled by LLMs into the complexities of the current high-level languages. Knowing Java or Python will become a rare skill, akin to individuals specializing in low-level optimizations using C or assembly language these days. Instead, the focus of developer experience will shift to the higher-level abstractions that are built on top of LLMs and composing these abstractions for different tasks. Compillmers will make programming more accessible in the near future such that writing software becomes part of the resume of most knowledge workers.
     </p>
   </body>
 </html>
