@@ -1,5 +1,5 @@
 html {
-  font-family: monospace;
+  font-family: Inter;
   font-size: 1rem;
   margin: 3rem;
 }
@@ -18,7 +18,8 @@ h1 {
   margin-bottom: 3rem;
 }
 
-pre[class*=language-]:after, pre[class*=language-]:before {
+pre[class*=language-]:after,
+pre[class*=language-]:before {
   box-shadow: none !important;
 }
 
