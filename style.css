@@ -18,6 +18,10 @@ h1 {
   margin-bottom: 3rem;
 }
 
+a {
+  color: rgb(61, 149, 206);
+}
+
 pre[class*=language-]:after,
 pre[class*=language-]:before {
   box-shadow: none !important;
