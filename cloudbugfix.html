@@ -22,14 +22,14 @@
   </p>
 
   <p>
-    However, when debugging with LLMs we <i>do</i> know what the expected behavior is. The LLM-generated code needs to fix the provided bug without introducing new ones. Picture a cloud infrastructure offering that can debug containerized applications for us by submitting pull requests that verifiably fix existing production bugs while following codebase conventions. This type of self-healing infrastructure offering allows developers to spend less time debugging and more time shipping new features while providing a more reliable experience for end-users. Let's go over how this cloud offering works, but first let's look closer at how we are currently using LLMs to debug our code.
+    However, when debugging with LLMs we <i>do</i> know what the expected behavior is. The LLM-generated code needs to fix the provided bug without introducing new ones. Picture a cloud infrastructure offering that can debug containerized applications for us by submitting pull requests that verifiably fix existing production bugs while following codebase conventions. This type of self-healing infrastructure allows developers to spend less time debugging and more time shipping new features while providing a more reliable experience for end-users. Let's go over how this cloud offering works, but first let's take a closer look at how we are currently using LLMs to debug our code.
   <p>
 
 
   <p class="nostyle-header">
   <h3>what is the best interface or abstraction for debugging with LLMs?</h3>
   <p>
-    Today, we debug errors with LLMs using chat-like interfaces within a terminal, website or code editor and we verify
+    Today, we debug errors with LLMs using chat-like interfaces within a terminal, website, or code editor and we verify
     the LLM's generated code by perusing it and/or manually running it within our codebase. However, a less painful
     debugging workflow is possible outside of a chat interface where the mistakes made by the LLM are not visible to us.
   <p>
