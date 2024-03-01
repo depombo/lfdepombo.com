@@ -21,7 +21,7 @@
     LLMs are thus far the fastest adopted technology in history after OpenAI reported that ChatGPT achieved 100 million users within 2 months of its release. Chief among the uses cases for LLMs is code generation. Today, we mostly generate code with LLMs using chat-like interfaces within a terminal, website, or code editor. However as impressive as LLMs are at coding today, any developer that has used LLMs for code generation knows that even with the right context the vast majority of the time LLMs don't generate code that works as-is. Instead the generated code either needs to be throughly massaged, or it serves as inspiration for the code we ultimately end up writing. In some cases, the LLM-generated code seems to come close to the desired solution and we verify it by perusing it and/or manually running it within our codebases. However, this rarely works. One Princeton <a href="https://arxiv.org/pdf/2310.06770.pdf">study</a> that tasked two different LLMs to solve 2,294 real GitHub issues found that Claude 2 and GPT-4 solved only 4.8% and 1.7% of the issues respectively.
   </p>
   <p>
-    Let's look into the most common types of LLM code generation and for one of them let's explore a workflow to automatically verify LLM-generated code outside of a chat/visual interface where we can't see the many mistakes made by LLMs. These types of workflows to programmatically verify LLM-generated code might not be the norm today, but they will become more attractive as the price of invoking LLMs goes down and the generative coding abilities of LLMs improve.
+    Let's look at the most common types of LLM code generation and for one of them let's explore a workflow to automatically verify LLM-generated code outside of a chat/visual interface where we can't see the many mistakes made by LLMs. These types of workflows to programmatically verify LLM-generated code might not be the norm today, but they will become more attractive as the price of invoking LLMs goes down and the generative coding abilities of LLMs improve.
   </p>
 
   <p class="nostyle-header">
@@ -34,25 +34,25 @@
     1. "I know how to write this code but it's repetitive or cumbersome to write"
   </p>
   <p>
-    This one of the most common scenarios and code editor copilots shine here. Additionally, we can easily verify the accuracy of the code and there is often code samples that can be given to the LLM to increase accuracy and likelihood that code conventions are followed. An example is calling an API to then perform some sort of data transformation on the response, or generating self-contained components in React or some other reactive frontend framework.
+    Code editor AI copilots shine here. This is one of the most common scenarios and we can easily verify the accuracy of the code as there is often code samples that can be given to the LLM. Some examples include implementing a function with a well defined purpose, calling an API and then performing some sort of data transformation on the response, or generating self-contained components in React or some other reactive frontend framework.
   </p>
   <p>
     2. "I don't know how to write this code. Help"
   </p>
   <p>
-    This is tricky because the LLM can often lead us astray unless we reason from first principles. However, there is also no other alternative as Google and Stackoverflow were probably a dead end. This often ends up being a conversation with a lot of back and forth where code-generated is interleaved with suggestions on ways to approach the problem that may or may not work.
+    This use case is tricky because the LLM can often lead us astray unless we reason from first principles and try to understand the underlying technology, API and/or framework. However, we often don't have many other alternatives as searching Google and Stackoverflow probably didn't help much either. This often ends up being a conversation with a lot of back and forth where code-generated is interleaved with explanations and ideas for how approach the problem in ways that may or may not work.
   </p>
   <p>
     3. "Write tests for this code"
   </p>
   <p>
-    This one is straight forward, but there is still no easy way to know if the tests generated do a sufficiently good enough job at testing the provided code even if the tests pass. However, it is up to the developer to be exhaustive enough in describing the many different ways in which the provided code should be tested and what type of input should be provided for unit tests. I worked on a <a href="https://github.com/alantech/marsha">syntax</a> that combined English and functional notation into a constrained format that was compiled by LLMs into tested python programs. We tried to make sure the LLM had enough information to generate valid tests themselves by failing to compile the syntax if sufficient examples were not provided, but it is still not a perfect solution.
+    This one is straight forward, but there is still no easy way to know if the tests generated do a sufficiently good enough job at testing the provided code even if the tests pass. However, it is up to the developer to be exhaustive enough in describing the many different ways in which the provided code should be tested and what type of input should be provided for unit tests. I worked on a <a href="https://github.com/alantech/marsha">syntax</a> that combined English and functional notation into a constrained format that was compiled by LLMs into tested Python programs. We tried to make sure the LLM had enough information to generate valid tests themselves by failing to compile the syntax if examples were not provided, but it this is still not a solution that works even the majority of the time.
   </p>
   <p>
     4. "Make this error go away"
   </p>
   <p>
-    This one is straight forward. The developer often just provides the stacktrace with or without more context of the code referenced in the stacktrace. LLMs tend to do better when the error generated belongs to a commonly used framework, as opposed to an application specific error, which makes sense as it is likely that the LLM was trained on Reddit or Stackoverflow posts that referenced the provided error. The LLM can often output instructions, or sample code, that the developer can implement to quickly see if the error is fixed. Like the 2nd use case on this list, this can end up being a conversation with a lot of back and forth where code-generated is interleaved with suggestions on ways to resolve the error that may or may not work.
+    This one is straight forward. The developer often just provides the stacktrace with or without more context of the code referenced in the stacktrace. LLMs tend to do better when the error generated belongs to a commonly used framework, as opposed to an application specific error. This makes sense as it is likely that the LLM was trained on Reddit or Stackoverflow posts that referenced the provided error. The LLM can often output instructions, or sample code, that the developer can implement to quickly test if the bugfix works. Like the 2nd use case on this list, this can end up being a conversation with a lot of back and forth where code-generated is interleaved with suggestions on ways to resolve the error that may or may not work.
   </p>
   </p>
 
