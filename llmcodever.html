@@ -1,0 +1,192 @@
+<html>
+
+<head>
+  <title>verifying LLM-generated code</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔘</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <script type="text/javascript" src="posthog.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-coy.min.css">
+</head>
+
+<body>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-armasm.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-fortran.min.js"></script>
+  <p><a href="./">..</a></p>
+  <p style="text-align:right">2024-03-01</p>
+  <h1>verifying LLM-generated code</h1>
+  </p>
+
+  <p>
+    LLMs are thus far the fastest adopted technology in history after OpenAI reported that ChatGPT achieved 100 million users within 2 months of its release. Chief among the uses cases for LLMs is code generation. Today, we mostly generate code with LLMs using chat-like interfaces within a terminal, website, or code editor. However as impressive as LLMs are at coding today, any developer that has used LLMs for code generation knows that even with the right context the vast majority of the time LLMs don't generate code that works as-is. Instead the generated code either needs to be throughly massaged, or it serves as inspiration for the code we ultimately end up writing. In some cases, the LLM-generated code seems to come close to the desired solution and we verify it by perusing it and/or manually running it within our codebases. However, this rarely works. One Princeton <a href="https://arxiv.org/pdf/2310.06770.pdf">study</a> that tasked two different LLMs to solve 2,294 real GitHub issues found that Claude 2 and GPT-4 solved only 4.8% and 1.7% of the issues respectively.
+  </p>
+  <p>
+    Let's look into the most common types of LLM code generation and for one of them let's explore a workflow to automatically verify LLM-generated code outside of a chat/visual interface where we can't see the many mistakes made by LLMs. These types of workflows to programmatically verify LLM-generated code might not be the norm today, but they will become more attractive as the price of invoking LLMs goes down and the generative coding abilities of LLMs improve.
+  </p>
+
+  <p class="nostyle-header">
+  <h3>the different types of LLM code generation</h3>
+  </p>
+  <p>
+    Let's take a closer look at the different scenarios in which developers use LLMs for code generation:
+  </p>
+  <p>
+    1. "I know how to write this code but it's repetitive or cumbersome to write"
+  </p>
+  <p>
+    This one of the most common scenarios and code editor copilots shine here. Additionally, we can easily verify the accuracy of the code and there is often code samples that can be given to the LLM to increase accuracy and likelihood that code conventions are followed. An example is calling an API to then perform some sort of data transformation on the response, or generating self-contained components in React or some other reactive frontend framework.
+  </p>
+  <p>
+    2. "I don't know how to write this code. Help"
+  </p>
+  <p>
+    This is tricky because the LLM can often lead us astray unless we reason from first principles. However, there is also no other alternative as Google and Stackoverflow were probably a dead end. This often ends up being a conversation with a lot of back and forth where code-generated is interleaved with suggestions on ways to approach the problem that may or may not work.
+  </p>
+  <p>
+    3. "Write tests for this code"
+  </p>
+  <p>
+    This one is straight forward, but there is still no easy way to know if the tests generated do a sufficiently good enough job at testing the provided code even if the tests pass. However, it is up to the developer to be exhaustive enough in describing the many different ways in which the provided code should be tested and what type of input should be provided for unit tests. I worked on a <a href="https://github.com/alantech/marsha">syntax</a> that combined English and functional notation into a constrained format that was compiled by LLMs into tested python programs. We tried to make sure the LLM had enough information to generate valid tests themselves by failing to compile the syntax if sufficient examples were not provided, but it is still not a perfect solution.
+  </p>
+  <p>
+    4. "Make this error go away"
+  </p>
+  <p>
+    This one is straight forward. The developer often just provides the stacktrace with or without more context of the code referenced in the stacktrace. LLMs tend to do better when the error generated belongs to a commonly used framework, as opposed to an application specific error, which makes sense as it is likely that the LLM was trained on Reddit or Stackoverflow posts that referenced the provided error. The LLM can often output instructions, or sample code, that the developer can implement to quickly see if the error is fixed. Like the 2nd use case on this list, this can end up being a conversation with a lot of back and forth where code-generated is interleaved with suggestions on ways to resolve the error that may or may not work.
+  </p>
+  </p>
+
+
+  <!-- <p>
+    And every time we debug with LLMs we <i>do</i> know what the expected behavior is. The LLM-generated code needs to fix the provided bug without introducing new ones Today, we debug errors with LLMs using chat-like interfaces within a terminal, website, or code editor and we verify
+    the LLM's generated code by perusing it and/or manually running it within our codebase. However, a less painful
+    debugging workflow is possible outside of a chat interface where we can't see the many mistakes made by the LLM.
+
+    Let's take a closer look at how we are currently using LLMs to debug our code and then dive deeper into a potential setup that would allow LLMs to automatically debug our code for us.
+
+    Picture a cloud infrastructure offering that can debug containerized applications for us by submitting pull requests that verifiably fix existing production bugs while following codebase conventions. This type of self-healing infrastructure allows developers to spend less time debugging and more time shipping new features while providing a more reliable experience for end-users. Let's go over how this cloud offering works, but first
+  <p> -->
+  <p>
+    I'm particularly interested in automating the verification of the LLM code generated for the last use case because the functionality of LLM-generated code when debugging is binary and always verifiable- did the error go away and did any new errors arise?
+  </p>
+
+  <p class="nostyle-header">
+  <h3>automating the verification of LLM-generated bugfixes</h3>
+  <!-- <p>
+    Today, we debug errors with LLMs using chat-like interfaces within a terminal, website, or code editor and we verify
+    the LLM's generated code by perusing it and/or manually running it within our codebase. However, a less painful
+    debugging workflow is possible outside of a chat interface where the mistakes made by the LLM are not visible to us.
+  <p> -->
+  <p>
+    Automatically debugging exceptions within a containerized production application is possible with an opinionated cloud infrastructure and error monitoring setup that collects the necessary data to verify bugfixes and behind the scenes tasks an LLM to generate a bugfix for each of the recorded production errors. A pull request to the application's codebase is submitted <i>if and only if</i> a bugfix verifiably fixes a given error. Pull request ideally have unit tests run to ensure there are no breaking changes or regressions. Finally, one of the maintainers can take a closer look at the LLM's proposal for a verified bugfix to a particular error and decide to discard it, further edit it or merge it.
+  </p>
+  <p>
+    The cloud infrastructure offering hosting the production application in question needs to be able to parse and collect incoming requests and outgoing network traffic using eBPF (more on that later). The infrastructure offering can then create branches out of the main git branch of the application's codebase with potential bugfixes and deploy them to sandboxed development environments behind the scenes. Finally, the cloud offering replays the incoming requests for the sandboxed environments while simultaneously mocking the outgoing network traffic using previously recorded values from the time the error took place. If no error is thrown, the cloud offering opens a pull request for the maintainers to review. This is a rough sketch of what I am describing:
+  </p>
+
+  <img src="./llmcodever.jpg"></img>
+
+  <p>
+    <!-- The bottom line is that we shouldn't have to peruse, or manually run, an LLM's generated code to know if it failed. We can evaluate the
+    LLM's generated code programmatically even if at present LLMs will fail most of the time behind the scenes. However, as the
+    capabilities of
+    generative AI models to retain more context increases and their lazy tendency to produce incomplete code or
+    hallucinate decreases, the hit rate will go up and the self-healing capabilities of such an abstraction will become more
+    robust and valuable. -->
+
+    Automating the verification of LLM-generated bugfixes requires two important features to be able
+    to provide the best UX and easily run behind the scenes trying to find verifiable bugfixes:
+  </p>
+  <p class="nostyle-header">
+    1. git-based deployment process for containerized apps
+  </p>
+  <p>
+    A git-centered deployment experience allows us to deploy by pushing a git branch to a remote repository without having to configure a CI/CD system.
+    This workflow has been around since 2009 thanks to Heroku, the grandfather of all PaaS. This DevOps abstraction tucks away a fair amount of
+    complexity by making some assumptions about our app. For most cases, it really should be
+    as simple as some form of pushing to a branch with a <code>Dockerfile</code> or <code>docker-compose.yml</code> in it (or nothing in particular if using <a href="https://nixpacks.com/docs">Nixpacks</a>)
+    without having to deal with the fairly standard DevOps process of:
+    <li>building the docker image from a <code>Dockerfile</code></li>
+    <li>pushing the image to a repository</li>
+    <li>updating the process in a VM or K8 pod with the new code</li>
+  </p>
+  <p>
+    I do wish more container cloud offerings today where as easy to use as the git-based,
+    webapp offerings of Netlify or Vercel. <a href="https://fly.io/docs/languages-and-frameworks/dockerfile/">Fly.io</a>
+    is one good example of a provider with a seamless,
+    git-based deployment process for containerized apps.
+
+    Cloud infrastructure that abstracts away the repetitive parts of the deployment process not only has superior UX,
+    but it can easily provide features that can save us a lot of development time like <a href="https://vercel.com/docs/deployments/preview-deployments">preview deployments</a>.
+    Most importantly, a git-based deployment process also makes it
+    possible to programmatically replicate deployments behind the scenes. This is imperative to be able to propose verifiable bugfixes as we can test if an LLM can
+    generate code that fixes a given bug, and do
+    that repeatedly for all bugs, without an overly complicated CI/CD workflow, or some sort of spaghetti of yaml.
+  </p>
+
+  <p class="nostyle-header">
+    2. replay of incoming traffic and mocking of outgoing traffic via eBPF-based, SDK-less error monitoring
+  </p>
+
+  <!-- <p>
+    Highlight, DataDog and Sentry have led the charge in error monitoring. I have personally been a happy Sentry user
+    for years. Their UI to triage, resolve and dive into errors does the job. Admittedly, the times where I have had to
+    manually hook up a CI/CD to Sentry and programatically pass on information about <a href="https://docs.sentry.io/product/integrations/deployment/">deployments</a>, <a href="https://docs.sentry.io/product/releases/">releases</a>, and <a href="https://docs.sentry.io/platforms/javascript/sourcemaps/">compilation source maps</a>
+    across multiple environments it has been a massive
+    pain. However, Sentry's setup works particularly well when using some sort of PaaS integration for it like the one
+    offered by Vercel as it abstracts all of the complexity described above.
+  <p> -->
+  </p>
+  <p>
+    Error monitoring tools are used primordialy to triage applicaiton errors. However, some offerings can also collect networking traffic to later replicate production conditions in sandboxed staging environments to improve reliability of upcoming software releases. Most error monitoring tools offer SDKs to explicitly instrument errors and networking calls within an app which can be tedious. However, some providers like
+    <a href="https://www.datadoghq.com/knowledge-center/ebpf/#how-to-enjoy-the-benefits-of-ebpf-today">DataDog</a> have
+    SDK-less error monitoring offerings built on <a href="https://ebpf.io">eBPF</a>.
+  </p>
+  <p>
+    eBPF is a Linux technology that
+    can run sandboxed programs in the kernel without changing kernel source. This technology opens the door for powerful error
+    monitoring tools by hooking directly into kernel OS calls without any additional syntax required
+    within a containerized codebase. However, fully SDK-less error monitoring via eBPF programs requires privileged, or
+    <code>sudo</code>, access to hook into the kernel to then span the containerized app as a child process. This
+    can be a complicated setup as most containerized deployment systems provide a sandboxed, or unprivileged,
+    environment to run apps on.
+    As such, SDK-less error monitoring is less common and typically reserved for business critical high performance needs.
+
+    However, an SDK-less setup provides both a better UX, and the ability
+    to replay incoming traffic and mock outgoing traffic behind the
+    scenes which is necessary to verify the
+    LLM's proposed bugfixes programmatically. Mocking all outgoing network traffic is particulally tricky as any communication to downstream databases and services needs to be properly parsed, recorded and stubbed which would not be possible without eBPF hooks.
+  </p>
+
+  <p class="nostyle-header">
+    <!-- the verification of LLM-generated code will create a new suite of devtools -->
+    <!-- the ramifications of verifying LLM-generated code in devtooling -->
+    <!-- the ramifications of being able to verify LLM-generated code in devtooling -->
+  <h3>the rise of devtools that can automatically verify LLM generated code</h3>
+  </p>
+  <p>
+    I find the intersection of LLMs and devtools particularly fascinating because, unlike natural languages such as English, programming languages can be evaluated by non-LLM computer programs. This capability allows us to programmatically understand the output of code generated by an LLM without manually reviewing it ourselves-a significant initial step. Unfortunately, actually verifying the correctness of LLM-generated code is not feasible without knowing the expected output of the generated computer program. This is generally not possible. However, the next frontier of devtools
+    is one where we are able to verify the correctness of an LLM's output for very specific types of code generation in which we do know what the program's output should be.
+    This is
+    why frontend devtools that turn Figma designs to React components have been on the rise. Generative AI
+    models can understand images which represent data that can be used to verify the correctness of
+    LLM-generated frontend code. Similarly, we can verify code generated by an LLM that was
+    tasked to fix application errors because the expected output is simply that the error goes away and no new errors
+    arise.
+  </p>
+  <p>
+    Drop me a line at lfdepombo at gmail dot com if you want to learn more about a cloud infrastructure offering I have been working on that proposes
+    verifiable bugfixes. I would also love to hear your thoughts on any type of programmatic verification for
+    LLM-generated
+    code, or on
+    building abstractions with LLMs
+    without directly exposing a chat, or visual, interface to end-users.
+  </p>
+
+  <br>
+  <br>
+  <br>
+
+</body>
+
+</html>
