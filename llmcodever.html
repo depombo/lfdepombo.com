@@ -46,7 +46,7 @@
     3. "Write tests for this code"
   </p>
   <p>
-    This one is straight forward, but there is still no easy way to know if the tests generated do a sufficiently good enough job at testing the provided code even if the tests pass. However, it is up to the developer to be exhaustive enough in describing the many different ways in which the provided code should be tested and what type of input should be provided for unit tests. I worked on a <a href="https://github.com/alantech/marsha">syntax</a> that combined English and functional notation into a constrained format that was compiled by LLMs into tested Python programs. We tried to make sure the LLM had enough information to generate valid tests themselves by failing to compile the syntax if examples were not provided, but it this is still not a solution that works even the majority of the time.
+    This one is straight forward, but there is still no easy way to know if the tests generated do a sufficiently good enough job at testing the provided code even if the tests pass. However, it is up to the developer to be exhaustive enough in describing the many different ways in which the provided code should be tested and what type of input should be provided for unit tests. I worked on a <a href="https://github.com/alantech/marsha">syntax</a> that combined English and functional notation into a constrained format that was compiled by LLMs into tested Python programs. We tried to make sure the LLM had enough information to generate valid tests by failing to compile the syntax if examples were not provided by the user, but there was still no way of verifying the LLM-generated unit tests themselves.
   </p>
   <p>
     4. "Make this error go away"
