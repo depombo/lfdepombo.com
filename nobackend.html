@@ -1,0 +1,82 @@
+<html>
+
+<head>
+  <title>no more needless backends for simple client apps</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔘</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-coy.min.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-clike.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-dart.min.js"></script>
+  <script type="text/javascript" src="posthog.js"></script>
+</head>
+
+<body>
+
+  <p><a href="./">..</a></p>
+  <p style="text-align:right">2024-08-14</p>
+  <h1>no more needless backends</h1>
+
+
+  <p>
+    As of August 2024, none of the major Backend-as-a-service platforms for developing Flutter apps like Supabase, Cloudflare, Vercel, or Firebase support Dart cloud functions. Additionally, many Flutter packages can't be utilized in Dart backends due to the absence of UI dependencies. As a result, developers using Flutter often have to rewrite model and controller logic to handle database operations a second time in Dart, Javascript or Python. This leads to duplicated effort and a slower development process which is the entire purpose of these services.
+
+    <!-- <Flutter usage graph</Flutter> -->
+    </p>
+    <h3>backmesh</h3>
+    I got tired of having to write a cloud function in Javascript or Python for every Flutter project that called some private key API so I built <a href="https://backmesh.com">Backmesh</a>. Backmesh is a minimal SaaS for Flutter developers to safely call private key APIs, such as OpenAI in the example below, without writing any backend code in a server or cloud function.
+
+  </p>
+
+  <pre>
+    <code class="language-dart">
+// Auth Provider: Firebase
+// App Type: Flutter Dart
+// Private Key API: OpenAI
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:dart_openai/dart_openai.dart';
+
+
+OpenAI.baseUrl =
+  "https://edge.backmesh.com/proxyname"; // "https://api.openai.com" is the default one.
+// set api secret key to jwt
+OpenAI.apiKey = await FirebaseAuth.instance.currentUser.getIdToken();
+await OpenAI.instance.chat(...)
+    </code>
+  </pre>
+
+  <p>
+    There are many legitimate use cases for backends, but the primary use case for many Flutter apps that require a backend is just being able to securely call an external, private key API. Backmesh allows Flutter apps, or any client app written in any language, to do this without a backend by storing the private API key and providing a JWT protected proxy with user-scoped access using the app's authentication provider.
+  </p>
+
+  <h3>security considerations</h3>
+
+  <p>
+    Let's quickly go over authorization and the two different types of authentication:
+
+    <ul>
+      <li>Authentication verifies someone is who they say they are.
+        <ol type="a">
+          <li>User authentication means we can identify which user is making a request and whether the user in question is valid.</li>
+          <li>Client app authentication means we can verify that the request is originating from a valid and untampered app client.</li>
+        </ol>
+      </li>
+      <li>Authorization verifies that someone has access to something specific and grants access if applicable. Authorization requires authentication to happen first.</li>
+    </ul>
+    <p>
+      For example, Firebase provides user authentication, but only properly configured Firestore security rules provide authorization to your database. Furthermore, only adding Firebase AppCheck can provide client app authentication. More about that <a href="https://firebase.google.com/docs/firestore/security/overview">here</a>.
+    </p>
+
+    
+    In the case of a public API proxy, Backmesh performs user authentication to ensure that requests to the proxy securing your private key API come from one of your users. This does not provide authorization about which specific users are allowed to make which requests to the proxy, or how many requests a specific user can make. However, with Backmesh you can set rate limits across all your users to reasonably protect your API resources e.g. no user should be calling a given API more than X times per hour. It is possible to integrate with Stripe to be able to set authorization access rules for users based on their payment plan. If you are interested in this email hello at backmesh dot com.
+
+  </p>
+  
+  <br>
+  <br>
+
+  <br>
+</body>
+
+</html>
