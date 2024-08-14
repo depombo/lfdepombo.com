@@ -19,12 +19,12 @@
 
 
   <p>
-    As of August 2024, none of the major Backend-as-a-service platforms for developing Flutter apps like Supabase, Cloudflare, Vercel, or Firebase support Dart cloud functions. Additionally, many Flutter packages can't be utilized in Dart backends due to the absence of UI dependencies. As a result, developers using Flutter often have to rewrite model and controller logic to handle database operations a second time in Dart, Javascript or Python. This leads to duplicated effort and a slower development process which is the entire purpose of these services.
+    As of August 2024, none of the major Backend-as-a-service platforms for developing Flutter apps like Supabase, Cloudflare, Vercel, or Firebase support Dart cloud functions. Additionally, many Flutter packages can't be utilized in Dart backends due to the absence of UI dependencies. As a result, developers using Flutter often have to rewrite model and controller logic to handle database operations a second time in Dart, Javascript or Python. This leads to duplicated effort and a slower development process.
 
     <!-- <Flutter usage graph</Flutter> -->
     </p>
     <h3>introducing backmesh</h3>
-    I got tired of having to write a cloud function in Javascript or Python for every Flutter project that called some private key API so I built <a href="https://backmesh.com">Backmesh</a>. Backmesh is a minimal SaaS for Flutter developers to safely call private key APIs, such as OpenAI in the example below, without writing any backend code in a server or cloud function.
+    <a href="https://backmesh.com">Backmesh</a> is a SaaS for Flutter developers to safely call private key APIs, such as OpenAI in the example below, without writing any backend code in a server or cloud function. I built it because I got tired of having to write to rewrite controller and database model logic in Javascript or Python cloud functions for every Flutter project that only needed to call some private key API. This is what the code looks like in your Flutter App:
 
   </p>
 
@@ -47,7 +47,7 @@ await OpenAI.instance.chat(...)
   </pre>
 
   <p>
-    There are many legitimate use cases for backends, but the primary use case for many Flutter apps that require a backend is just being able to securely call an external, private key API. Backmesh allows Flutter apps, or any client app written in any language, to do this without a backend by storing the private API key and providing a JWT protected proxy with user-scoped access using the app's authentication provider.
+    Backmesh allows Flutter apps, or any client app written in any language, to do this without a backend by storing the private API key and providing a JWT protected proxy with user-scoped access using the app's authentication provider.
   </p>
 
   <h3>security considerations</h3>
@@ -69,7 +69,7 @@ await OpenAI.instance.chat(...)
     </p>
 
     
-    In the case of a public API proxy, Backmesh performs user authentication to ensure that requests to the proxy securing your private key API come from one of your users. This does not provide authorization about which specific users are allowed to make which requests to the proxy, or how many requests a specific user can make. However, with Backmesh you can set rate limits across all your users to reasonably protect your API resources e.g. no user should be calling a given API more than X times per hour. It is possible to integrate with Stripe to be able to set authorization access rules for users based on their payment plan. If you are interested in this email hello at backmesh dot com.
+    In the case of a public API proxy, Backmesh performs user authentication to ensure that requests to the proxy securing your private key API come from one of your users. This does not provide authorization about which specific users are allowed to make which requests to the proxy, or how many requests a specific user can make. However, Backmesh lets you can set rate limits across all your users to reasonably protect your API resources e.g. no user should be calling a given API more than X times per hour. It is possible to integrate with Stripe to be able to set authorization access rules for users based on their payment plan. If you are interested in this email hello at backmesh dot com.
 
   </p>
   
